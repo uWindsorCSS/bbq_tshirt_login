@@ -37,8 +37,8 @@ def autocomplete(prefix):
     return Response(json.dumps(name_trie.autocomplete(prefix)),\
                 mimetype='application/json')
 
-@app.route('/checkin/<name>')
-def checkin(name):
+@app.route('/checkin/<name>/<shirt_size>')
+def checkin(name, shirt_size):
     result = query_db(
         "select checked_in, checked_in_at from users where name = ?", (name,))
     if len(result) == 0:
@@ -50,9 +50,9 @@ def checkin(name):
         return jsonify(
             success=False, message="User already checked in at " + checked_in_at)
 
-    query_db("update users set checked_in = ?, checked_in_at = ? where name = ?",
-                (True, str(datetime.now()), name))
-    return jsonify(success=True, message="User successfully checked in")
+    query_db("update users set checked_in = ?, checked_in_at = ?, shirt_size = ? where name = ?",
+                (True, str(datetime.now()), shirt_size, name))
+    return jsonify(success=True, message=name + " successfully checked in")
 
 @app.route('/')
 def index():

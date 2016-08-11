@@ -20,6 +20,7 @@ $(document).ready(function() {
   });
 
   $("#login").on("click", function() {
-    $.get("/checkin/" + $("#full-name").val(), loginResponseHandler);
+    $.get("/checkin/" + $("#full-name").val() + "/" + $("#shirt-size").val(),
+        loginResponseHandler);
   });
 });
