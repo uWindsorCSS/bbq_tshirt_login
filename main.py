@@ -42,13 +42,13 @@ def checkin(name, shirt_size):
     result = query_db(
         "select checked_in, checked_in_at from users where name = ?", (name,))
     if len(result) == 0:
-        return jsonify(success=False, message="User in not in first year CS")
+        return jsonify(success=False, message=name + " in not in first year CS")
 
 
     checked_in, checked_in_at = result[0]
     if bool(checked_in):
         return jsonify(
-            success=False, message="User already checked in at " + checked_in_at)
+            success=False, message=name + " already checked in at " + checked_in_at)
 
     query_db("update users set checked_in = ?, checked_in_at = ?, shirt_size = ? where name = ?",
                 (True, str(datetime.now()), shirt_size, name))
