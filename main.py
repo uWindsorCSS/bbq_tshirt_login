@@ -1,4 +1,5 @@
 from flask import Flask, Response, g, jsonify
+from werkzeug.contrib.cache import SimpleCache
 from trie import Trie
 from datetime import datetime
 import json
@@ -6,7 +7,7 @@ import sys
 import sqlite3
 
 app = Flask(__name__, static_url_path='')
-name_trie = Trie()
+cache = SimpleCache()
 DATABASE = './users.db'
 
 def get_db():
@@ -28,12 +29,19 @@ def close_connection(exception):
         db.commit()
         db.close()
 
-def init_autocomplete(names):
-    for name in names:
+def init_autocomplete():
+    names = query_db("select name from users")
+    name_trie = Trie()
+    for (name,) in names:
         name_trie.insert(name)
+    return name_trie
 
 @app.route('/autocomplete/<prefix>')
 def autocomplete(prefix):
+    name_trie = cache.get("nametrie")
+    if name_trie is None:
+        name_trie = init_autocomplete()
+        cache.set("nametrie", name_trie)
     return Response(json.dumps(name_trie.autocomplete(prefix)),\
                 mimetype='application/json')
 
@@ -59,6 +67,4 @@ def index():
     return app.send_static_file("index.html")
 
 if __name__ == "__main__":
-    names = open(sys.argv[1]).readlines()
-    init_autocomplete(map(lambda x: x.strip(), names))
     app.run()
